@@ -5,11 +5,15 @@ import {
   LikeMessageDto,
   UserMessageDto,
 } from 'src/dto/user.dto';
+import { GroupService } from 'src/services/group.service';
 import { UserService } from 'src/services/user.service';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly groupService: GroupService,
+  ) {}
   @Post('/create')
   async create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
@@ -32,21 +36,26 @@ export class UserController {
 
   @Post('/createGroup')
   async createGroup(createGroupDto: any) {
-    return this.userService.createGroup(createGroupDto);
+    return this.groupService.createGroup(createGroupDto);
   }
 
   @Delete('/deleteGroup')
   async deleteGroup(groudId: string) {
-    return this.userService.deleteGroup(groudId);
+    return this.groupService.deleteGroup(groudId);
   }
 
   @Get('/searchMembers')
   async searchMembers(groupId: string) {
-    return this.userService.searchMembers(groupId);
+    return this.groupService.searchMembers(groupId);
+  }
+
+  @Get()
+  async getUsers() {
+    return this.userService.getUsers();
   }
 
   @Post('/addMembers')
   async addMembers(addMembersDto: any) {
-    return this.userService.addMembers(addMembersDto);
+    return this.groupService.addMembers(addMembersDto);
   }
 }

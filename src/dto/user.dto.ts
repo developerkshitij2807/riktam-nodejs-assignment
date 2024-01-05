@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import { Message } from 'src/dto/message.dto';
 
 export class CreateUserDto {
@@ -18,10 +19,10 @@ export class EditUserDto {
 export class UserMessageDto {
   text: string;
   userId: string;
-  groupId: string;
+  groupId: Types.ObjectId;
 }
 
 export class LikeMessageDto {
-  likerId: string;
-  messageId: string;
+  likerId: Types.ObjectId;
+  messageId: Types.ObjectId;
 }

@@ -8,7 +8,7 @@ export class AuthenticationController {
 
   @Post('/login')
   async login(@Body() loginDto: LoginDto) {
-    this.authenticationService.login(loginDto);
+    return await this.authenticationService.login(loginDto);
   }
 
   @Get('/logout')

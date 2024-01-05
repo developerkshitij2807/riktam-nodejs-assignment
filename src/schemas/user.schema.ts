@@ -1,11 +1,18 @@
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 export const UserSchema = new mongoose.Schema({
   name: String,
-  username: Number,
+  username: String,
   hashedPassword: String,
-  messages: Array<String>,
-  likedMessages: Array<String>,
+  messages: Array<Types.ObjectId>,
+  likedMessages: Array<Types.ObjectId>,
 });
 
-export const UserModel = mongoose.model('UserModel', UserSchema);
+export interface User {
+  id: string;
+  name: string;
+  username: string;
+  hashedPassword: string;
+  messages: Array<Types.ObjectId>;
+  likedMessages: Array<Types.ObjectId>;
+}

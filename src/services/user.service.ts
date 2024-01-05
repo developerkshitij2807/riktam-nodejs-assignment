@@ -5,16 +5,22 @@ import {
   LikeMessageDto,
   UserMessageDto,
 } from 'src/dto/user.dto';
-import { UserModel } from 'src/schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 import { MessageModel } from 'src/schemas/message.schema';
-import { GroupModel } from 'src/schemas/groups.schemas';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User } from 'src/schemas/user.schema';
+import { GroupService } from 'src/services/group.service';
 
 @Injectable()
 export class UserService {
+  constructor(
+    @InjectModel('User') private readonly userModel: Model<User>,
+    private readonly groupService: GroupService,
+  ) {}
   async create(user: CreateUserDto) {
     try {
-      const checkUser = await UserModel.find({
+      const checkUser = await this.userModel.findOne({
         name: user.name,
         username: user.username,
       });
@@ -31,7 +37,7 @@ export class UserService {
         name: user.name,
       };
 
-      return await UserModel.create(userData);
+      return await this.userModel.create(userData);
     } catch (error) {
       throw Error(error);
     }
@@ -39,7 +45,7 @@ export class UserService {
 
   async edit(user: EditUserDto) {
     try {
-      return await UserModel.findByIdAndUpdate(
+      return await this.userModel.findByIdAndUpdate(
         {
           _id: user.id,
         },
@@ -50,20 +56,28 @@ export class UserService {
     }
   }
 
+  async getUsers() {
+    try {
+      return await this.userModel.find();
+    } catch (error) {
+      throw Error(error);
+    }
+  }
+
   async sendMessage(message: UserMessageDto) {
     try {
       const newMessage = await MessageModel.create(message);
 
-      const user = await UserModel.findOne({ _id: message.userId });
+      const user = await this.userModel.findOne({ _id: message.userId });
 
-      const group = await GroupModel.findOne({ _id: message.groupId });
+      const group = await this.groupService.findGroupById(message.groupId);
 
       group.messages.push(newMessage._id);
 
       user.messages.push(newMessage._id);
 
-      await UserModel.updateOne({ _id: user._id }, { user });
-      await GroupModel.updateOne({ _id: group._id }, { group });
+      await this.userModel.updateOne({ _id: user._id }, { user });
+      await this.groupService.updateGroupById(group._id, group);
     } catch (error) {
       throw Error(error);
     }
@@ -71,49 +85,13 @@ export class UserService {
 
   async likeMessage(likeMessageDto: LikeMessageDto) {
     try {
-      const user = await UserModel.findOne({ _id: likeMessageDto.likerId });
+      const user = await this.userModel.findOne({
+        _id: likeMessageDto.likerId,
+      });
 
       user.likedMessages.push(likeMessageDto.messageId);
 
-      return await UserModel.updateOne({ _id: user._id }, { user });
-    } catch (error) {
-      throw Error(error);
-    }
-  }
-
-  async createGroup(createGroupDto: any) {
-    try {
-      return await GroupModel.create(createGroupDto);
-    } catch (error) {
-      throw Error(error);
-    }
-  }
-
-  async deleteGroup(groudId: string) {
-    try {
-      return await GroupModel.deleteOne({ _id: groudId });
-    } catch (error) {
-      throw Error(error);
-    }
-  }
-
-  async searchMembers(groupId: string) {
-    try {
-      const group = await GroupModel.findById({ _id: groupId });
-
-      return group.members;
-    } catch (error) {
-      throw Error(error);
-    }
-  }
-
-  async addMembers(addMembersDto: any) {
-    try {
-      const group = await GroupModel.findById({ _id: addMembersDto.groudId });
-
-      group.members.push(addMembersDto);
-
-      return await GroupModel.updateOne({ _id: group._id }, { group });
+      return await this.userModel.updateOne({ _id: user._id }, { user });
     } catch (error) {
       throw Error(error);
     }
@@ -121,7 +99,7 @@ export class UserService {
 
   async findByUsername(username: String) {
     try {
-      return await UserModel.findOne({ username: username });
+      return await this.userModel.findOne({ username: username });
     } catch (error) {
       throw Error(error);
     }

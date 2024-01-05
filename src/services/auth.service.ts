@@ -1,37 +1,37 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable } from '@nestjs/common';
 import { LoginDto } from 'src/dto/login.dto';
-import { UserService } from 'src/services/user.service';
 import * as bcrypt from 'bcrypt';
+import { UserService } from 'src/services/user.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthenticationService {
   constructor(
-    private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async login(loginData: LoginDto) {
-    const { username, password } = loginData;
+    try {
+      const { username, password } = loginData;
 
-    const user = await this.userService.findByUsername(username);
+      const checkUser = await this.userService.findByUsername(username);
 
-    if (user) {
-      bcrypt.compare(password, user.hashedPassword, async function (err, res) {
-        if (err) {
-          throw new UnauthorizedException();
-        }
+      if (!checkUser) {
+        throw Error('User Does not exists');
+      }
 
-        if (res) {
-          const payload = {
-            username: user.username,
-            password: user.hashedPassword,
-          };
-          return {
-            access_token: await this.jwtService.signAsync(payload),
-          };
-        }
-      });
+      if (bcrypt.compareSync(password, checkUser.hashedPassword)) {
+        return {
+          access_token: this.jwtService.sign(loginData, {
+            secret: process.env.JWT_SECRET,
+          }),
+        };
+      } else {
+        throw Error('Invalid password');
+      }
+    } catch (error) {
+      throw Error(error);
     }
   }
 }
