@@ -1,9 +1,16 @@
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 export const MessageSchema = new mongoose.Schema({
   text: String,
-  userId: String,
-  groupId: String,
+  userId: Types.ObjectId,
+  groupId: Types.ObjectId,
+  likedUsers: Array<Types.ObjectId>,
 });
 
-export const MessageModel = mongoose.model('MessageModel', MessageSchema);
+export interface Message {
+  id: Types.ObjectId;
+  text: String;
+  userId: Types.ObjectId;
+  groupId: Types.ObjectId;
+  likedUsers: Array<Types.ObjectId>;
+}

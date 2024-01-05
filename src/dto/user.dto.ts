@@ -1,5 +1,4 @@
 import { Types } from 'mongoose';
-import { Message } from 'src/dto/message.dto';
 
 export class CreateUserDto {
   name: string;
@@ -10,8 +9,8 @@ export class CreateUserDto {
 export class EditUserDto {
   name: String;
   id: String;
-  messages: Array<Message>;
-  likedMessages: Array<String>;
+  messages: Array<Types.ObjectId>;
+  likedMessages: Array<Types.ObjectId>;
   username: String;
   password: String;
 }

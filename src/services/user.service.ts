@@ -6,17 +6,18 @@ import {
   UserMessageDto,
 } from 'src/dto/user.dto';
 import * as bcrypt from 'bcrypt';
-import { MessageModel } from 'src/schemas/message.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/schemas/user.schema';
 import { GroupService } from 'src/services/group.service';
+import { MessageService } from 'src/services/messages.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly groupService: GroupService,
+    private readonly messageService: MessageService,
   ) {}
   async create(user: CreateUserDto) {
     try {
@@ -66,7 +67,7 @@ export class UserService {
 
   async sendMessage(message: UserMessageDto) {
     try {
-      const newMessage = await MessageModel.create(message);
+      const newMessage = await this.messageService.createMessage(message);
 
       const user = await this.userModel.findOne({ _id: message.userId });
 
@@ -78,6 +79,8 @@ export class UserService {
 
       await this.userModel.updateOne({ _id: user._id }, { user });
       await this.groupService.updateGroupById(group._id, group);
+
+      return newMessage;
     } catch (error) {
       throw Error(error);
     }
@@ -91,7 +94,9 @@ export class UserService {
 
       user.likedMessages.push(likeMessageDto.messageId);
 
-      return await this.userModel.updateOne({ _id: user._id }, { user });
+      await this.messageService.likeMessage(likeMessageDto);
+
+      return await this.userModel.updateOne({ _id: user._id }, user);
     } catch (error) {
       throw Error(error);
     }

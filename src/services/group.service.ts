@@ -16,13 +16,14 @@ export class GroupService {
       throw Error(error);
     }
   }
-  async deleteGroup(groudId: string) {
+  async deleteGroup(groupId: Types.ObjectId) {
     try {
-      return await this.groupModel.deleteOne({ _id: groudId });
+      return await this.groupModel.deleteOne({ id: groupId });
     } catch (error) {
       throw Error(error);
     }
   }
+  
   async searchMembers(groupId: string) {
     try {
       const group = await this.groupModel.findById({ _id: groupId });

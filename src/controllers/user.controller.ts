@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import { Types } from 'mongoose';
 import {
   CreateUserDto,
   EditUserDto,
@@ -30,18 +39,18 @@ export class UserController {
   }
 
   @Patch('/likeMessage')
-  async likeMessage(likeMessageDto: LikeMessageDto) {
+  async likeMessage(@Body() likeMessageDto: LikeMessageDto) {
     return this.userService.likeMessage(likeMessageDto);
   }
 
   @Post('/createGroup')
-  async createGroup(createGroupDto: any) {
+  async createGroup(@Body() createGroupDto: any) {
     return this.groupService.createGroup(createGroupDto);
   }
 
   @Delete('/deleteGroup')
-  async deleteGroup(groudId: string) {
-    return this.groupService.deleteGroup(groudId);
+  async deleteGroup(@Param('groupId') groupId: Types.ObjectId) {
+    return this.groupService.deleteGroup(groupId);
   }
 
   @Get('/searchMembers')
